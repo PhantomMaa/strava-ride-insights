@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 import { refreshStravaToken } from './utils/strava'
 
 // 不需要认证的路由
-const publicPaths = ['/login', '/grouped-rides']
+const publicPaths = ['/login']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
