@@ -4,7 +4,7 @@ A modern web application that integrates with Strava to visualize and analyze yo
 
 English | [简体中文](./README.zh-CN.md)
 
-![image](https://github.com/user-attachments/assets/b543fcfc-61bf-48d5-8aa1-610d2bfc7690)
+![image](https://github.com/user-attachments/assets/011e6598-2b0e-4b3c-a5d2-8ab9b242be21)
 
 ## Features
 
