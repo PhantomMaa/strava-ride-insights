@@ -21,14 +21,14 @@
     "title": "追踪您的骑行旅程",
     "subtitle": "深入了解您的骑行数据，发现新的突破",
     "stats": {
-      "title": "数据统计",
+      "title": "年度统计",
       "description": "查看详细的骑行统计数据，包括总里程、爬升、时长等关键指标",
       "trendAnalysis": "趋势分析",
       "timeDistribution": "时间分布"
     },
     "activities": {
       "title": "骑行活动",
-      "description": "浏览您的完整骑行历史，包括路线、照片和成就",
+      "description": "浏览您的完整骑行历史，包括路线、每一次的骑行数据指标",
       "routeVisualization": "路线可视化",
       "activityDetails": "活动详情"
     }

@@ -42,6 +42,8 @@ export async function GET(request: Request) {
       }
     }
 
+    console.log(year, allActivities)
+
     return NextResponse.json(allActivities)
   } catch (error) {
     console.error('Error fetching activities:', error)

@@ -14,7 +14,7 @@ export const ROAD_STYLE = {
  */
 export const ROUTE_STYLE = {
   maxWidth: 2,
-  baseWidth: 0.1,
+  baseWidth: 1,
   intensityMultiplier: 3,
   opacity: 0.9,
 }
@@ -33,7 +33,7 @@ export const MAP_BACKGROUND = '#F7F2E8'
  * 不同强度骑行路线的颜色
  */
 export const HEATMAP_COLORS: GradientColor[] = [
-  { stop: 0, color: 'rgb(255, 183, 111)' }, // 更深的基础橙色
+  { stop: 0, color: 'rgb(255, 153, 81)' }, // 更深的基础橙色
   { stop: 0.3, color: 'rgb(255, 149, 64)' }, // 深橙色
   { stop: 0.5, color: 'rgb(255, 115, 17)' }, // 更深的橙色
   { stop: 0.7, color: 'rgb(255, 81, 0)' }, // 红橙色

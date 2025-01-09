@@ -159,6 +159,9 @@ export function CityRoadsMap({
           <div className="w-8 h-8 border-4 border-[#FF7311] border-t-transparent rounded-full animate-spin dark:border-[#FF9540] dark:border-t-transparent" />
         </div>
       )}
+      <div className="absolute bottom-1 right-1 text-xs text-gray-600 bg-white bg-opacity-75 px-1 rounded">
+        &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline">OpenStreetMap contributors</a>
+      </div>
     </div>
   )
 }

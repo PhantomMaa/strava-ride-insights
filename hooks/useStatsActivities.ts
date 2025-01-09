@@ -10,7 +10,7 @@ const fetcher = async (url: string) => {
   const data = await response.json()
   // 只返回骑行活动
   return data.filter((activity: StravaActivity) =>
-    ['VirtualRide', 'Ride'].includes(activity.sport_type)
+    activity.sport_type.toLowerCase().includes('ride')
   )
 }
 

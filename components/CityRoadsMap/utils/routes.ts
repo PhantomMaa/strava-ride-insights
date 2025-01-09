@@ -27,7 +27,7 @@ export function decodeRoutes(polylines: string[]): DecodedRoute[] {
     )
 
     // 计算强度值 (0-1 范围)
-    const intensity = (frequency - 1) / (maxFrequency - 1)
+    const intensity = maxFrequency === 1 ? 0 : (frequency - 1) / (maxFrequency - 1)
 
     return {
       points,

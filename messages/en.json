@@ -28,7 +28,7 @@
     },
     "activities": {
       "title": "Activities",
-      "description": "Browse your complete riding history, including routes, photos, and achievements",
+      "description": "Browse your complete riding history, including routes",
       "routeVisualization": "Route Visualization",
       "activityDetails": "Activity Details"
     }

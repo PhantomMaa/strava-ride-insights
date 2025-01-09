@@ -21,21 +21,21 @@ const ALL_GRID_SIZES: GridSize[] = [
 export function HeatMap({ activities }: HeatMapProps) {
   const [selectedGroup, setSelectedGroup] = useState<number>(0);
   const [gridSize, setGridSize] = useState<number>(ALL_GRID_SIZES[0].value);
-  
+
   const { groupedActivities, currentPolylines, startLatlng, currentStats, availableGridSizes } = useMemo(() => {
-    if (!activities?.length) return { 
-      groupedActivities: [], 
-      currentPolylines: [], 
+    if (!activities?.length) return {
+      groupedActivities: [],
+      currentPolylines: [],
       startLatlng: null,
       availableGridSizes: [],
-      currentStats: { 
-        count: 0, 
-        distance: 0, 
-        time: 0, 
+      currentStats: {
+        count: 0,
+        distance: 0,
+        time: 0,
         elevation: 0,
         speed: 0,
-        power: 0, 
-        heartrate: 0 
+        power: 0,
+        heartrate: 0
       }
     };
 
@@ -44,11 +44,10 @@ export function HeatMap({ activities }: HeatMapProps) {
     const allSizeGroups = new Map();
 
     for (const size of ALL_GRID_SIZES) {
-      const groups = groupPolyline(activities, size.value)
+      const groups = groupPolyline(activities.filter(a => a.sport_type !== 'VirtualRide' && a?.map?.summary_polyline), size.value)
         .map(group => ({
           activities: group,
           polylines: group
-            .filter(a => a.sport_type === 'Ride' && a?.map?.summary_polyline)
             .map(activity => activity.map.summary_polyline)
         }))
         .filter(group => group.polylines.length > 0)
@@ -56,23 +55,21 @@ export function HeatMap({ activities }: HeatMapProps) {
 
       allSizeGroups.set(size.value, groups);
 
-      console.log('group', allSizeGroups)
-      
       // Always include sizes until we hit the second single group
       if (availableSizes.length === 0 || // always include first size
-          groups.length > 1 || // include sizes with multiple groups
-          (groups.length === 1 && !availableSizes.some(s => allSizeGroups.get(s.value).length === 1))) { // include first single group
+        groups.length > 1 || // include sizes with multiple groups
+        (groups.length === 1 && !availableSizes.some(s => allSizeGroups.get(s.value).length === 1))) { // include first single group
         availableSizes.push(size);
       } else {
         break; // Stop after we hit a second single group
       }
     }
-    
+
     // If current grid size is not available, use the first available size
     if (!availableSizes.find(size => size.value === gridSize)) {
       setGridSize(availableSizes[0].value);
     }
-    
+
     // Get groups for current grid size
     const groups = allSizeGroups.get(gridSize) || [];
 
@@ -83,7 +80,7 @@ export function HeatMap({ activities }: HeatMapProps) {
 
     // Get current group's polylines
     const currentGroup = groups[selectedGroup] || { activities: [], polylines: [] };
-      
+
     // Get start location
     const startLocation = currentGroup.activities[0]?.start_latlng || activities[0].start_latlng;
 
@@ -99,15 +96,15 @@ export function HeatMap({ activities }: HeatMapProps) {
       elevation: currentGroup.activities.reduce((sum, activity) => sum + (activity.total_elevation_gain || 0), 0),
       speed: totalTime > 0 ? (totalDistance / totalTime) * 3.6 : 0, // Convert m/s to km/h
       power: Math.round(
-        currentGroup.activities.reduce((sum, activity) => sum + (activity.average_watts || 0), 0) / 
+        currentGroup.activities.reduce((sum, activity) => sum + (activity.average_watts || 0), 0) /
         currentGroup.activities.filter(activity => activity.average_watts).length || 0
       ),
       heartrate: Math.round(
-        currentGroup.activities.reduce((sum, activity) => sum + (activity.average_heartrate || 0), 0) / 
+        currentGroup.activities.reduce((sum, activity) => sum + (activity.average_heartrate || 0), 0) /
         currentGroup.activities.filter(activity => activity.average_heartrate).length || 0
       )
     };
-    
+
     return {
       groupedActivities: groups,
       currentPolylines: currentGroup.polylines,
@@ -125,7 +122,7 @@ export function HeatMap({ activities }: HeatMapProps) {
       <div className="aspect-[16/9]">
         <CityRoadsMap
           key={selectedGroup}
-          summaryPolylines={currentPolylines} 
+          summaryPolylines={currentPolylines}
           startLatlng={startLatlng}
         />
       </div>
@@ -209,8 +206,8 @@ export function HeatMap({ activities }: HeatMapProps) {
                     key={index}
                     onClick={() => setSelectedGroup(index)}
                     className={`min-w-[32px] h-8 px-2.5 text-xs font-medium rounded-full transition-all
-                      ${selectedGroup === index 
-                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-gray-800' 
+                      ${selectedGroup === index
+                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-gray-800'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'}`}
                   >
                     {index + 1}

@@ -82,7 +82,6 @@ export const getStravaActivities = async (
 
   const url = `https://www.strava.com/api/v3/athlete/activities?${searchParams.toString()}`
 
-  console.log('strava url', url)
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${access_token}`,
