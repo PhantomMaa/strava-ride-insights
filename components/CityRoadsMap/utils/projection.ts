@@ -17,12 +17,42 @@ export function getBounds(points: [number, number][]): Bounds {
   )
 }
 
-export function getExpandedBounds(bounds: Bounds, padding: number = 0.02): Bounds {
+export function getExpandedBounds(bounds: Bounds, padding: number = 0.02, ratio: number = 16/9): Bounds {
+  // 计算当前的宽度和高度
+  const width = bounds.maxLng - bounds.minLng
+  const height = bounds.maxLat - bounds.minLat
+
+  // 计算需要的宽高
+  const currentRatio = width / height
+  let newWidth = width
+  let newHeight = height
+
+  if (currentRatio > ratio) {
+    // 当前比例过宽，需要增加高度
+    newHeight = width / ratio
+  } else {
+    // 当前比例过高，需要增加宽度
+    newWidth = height * ratio
+  }
+
+  // 计算需要的padding
+  const latPadding = (newHeight - height) / 2
+  const lngPadding = (newWidth - width) / 2
+
+  // 应用padding
+  const expandedBounds = {
+    minLat: bounds.minLat - latPadding,
+    maxLat: bounds.maxLat + latPadding,
+    minLng: bounds.minLng - lngPadding,
+    maxLng: bounds.maxLng + lngPadding,
+  }
+
+  // 再应用统一的padding
   return {
-    minLat: bounds.minLat - padding,
-    maxLat: bounds.maxLat + padding,
-    minLng: bounds.minLng - padding,
-    maxLng: bounds.maxLng + padding,
+    minLat: expandedBounds.minLat - padding,
+    maxLat: expandedBounds.maxLat + padding,
+    minLng: expandedBounds.minLng - padding,
+    maxLng: expandedBounds.maxLng + padding,
   }
 }
 

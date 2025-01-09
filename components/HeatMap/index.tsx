@@ -119,7 +119,7 @@ export function HeatMap({ activities }: HeatMapProps) {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-colors">
-      <div className="aspect-[16/9]">
+      <div className="aspect-[1/1] md:aspect-[16/9]">
         <CityRoadsMap
           key={selectedGroup}
           summaryPolylines={currentPolylines}

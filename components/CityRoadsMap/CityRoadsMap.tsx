@@ -34,7 +34,10 @@ export function CityRoadsMap({
   const fetchRoads = useCallback(async (bounds: Bounds) => {
     try {
       setIsLoading(true)
-      const expandedBounds = getExpandedBounds(bounds)
+      const canvas = canvasRef.current
+      if (!canvas) return
+      const rect = canvas.getBoundingClientRect()
+      const expandedBounds = getExpandedBounds(bounds, 0.02, rect.width / rect.height)
       const roads = await fetchRoadNetwork(expandedBounds)
       setRoadNetwork(prevRoads => [...prevRoads, ...roads])
     } catch (error) {
