@@ -118,7 +118,7 @@
     }
   },
   "activities": {
-    "title": "Cycling Activities",
+    "noActivities": "empty",
     "loading": "Loading...",
     "loadMore": "Load More",
     "card": {

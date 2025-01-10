@@ -89,10 +89,24 @@ export const getStravaActivities = async (
   })
 
   if (!response.ok) {
-    throw new Error('Failed to fetch activities')
+    switch (response.status) {
+      case 401:
+        throw new Error('Unauthorized: Please reconnect your Strava account')
+      case 403:
+        throw new Error('Forbidden: You do not have access to this resource')
+      case 404:
+        throw new Error('Not found: The requested activities do not exist or you are not authorized to see them')
+      case 429:
+        throw new Error('Rate limit exceeded: Please try again later')
+      case 500:
+        throw new Error('Strava is having issues, please check https://status.strava.com')
+      default:
+        throw new Error(`Failed to fetch activities: ${response.status}`)
+    }
   }
 
-  return response.json()
+  const data = await response.json()
+  return data
 }
 
 export const getStravaAthlete = async (access_token: string) => {

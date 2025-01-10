@@ -1,6 +1,8 @@
 # RideVista - 你的个人骑行数据中心
 
-一个现代化的 Web 应用，集成 Strava 来可视化和分析你的骑行活动。使用 Next.js 15 构建，具有精美的界面和全面的统计数据。
+这是一个99%的代码借助Bolt.new + windsurft + claude 生成的项目，热力图UI借鉴了 [city-roads](https://github.com/anvaka/city-roads) ，非常感谢 anvaka！
+
+一个现代化的 Web 应用，集成 Strava 来可视化和分析你的骑行活动, 生成好看的年度骑行热力图。使用 Next.js 15 构建，具有精美的界面和全面的统计数据。
 
 [English](./README.md) | 简体中文
 
@@ -23,6 +25,7 @@
 - Tailwind CSS
 - next-intl
 - Mapbox
+- OpenStreetMap
 
 ## 开始使用
 

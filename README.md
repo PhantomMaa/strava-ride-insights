@@ -1,6 +1,9 @@
 # RideVista - Your Personal Cycling Dashboard
 
-A modern web application that integrates with Strava to visualize and analyze your cycling activities. Built with Next.js 15, featuring a beautiful UI and comprehensive statistics.
+This project is 99% code generated using Bolt.new + windsurft + Claude. The heatmap UI is inspired by [city-roads](https://github.com/anvaka/city-roads). Huge thanks to anvaka!
+
+A modern web application that integrates with Strava to visualize and analyze your cycling activities, generate an attractive annual cycling heatmap. Built with Next.js 15, featuring a beautiful UI and comprehensive statistics.
+
 
 English | [简体中文](./README.zh-CN.md)
 
@@ -22,6 +25,7 @@ English | [简体中文](./README.zh-CN.md)
 - Tailwind CSS
 - next-intl
 - Mapbox
+- OpenStreetMap
 
 ## Getting Started
 

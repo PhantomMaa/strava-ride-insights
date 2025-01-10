@@ -1,20 +1,45 @@
 'use client'
 import { ActivityCard } from '@/components/ActivityCard'
+import { ActivityTypeTab } from '@/components/ActivityTypeTab'
 import { useActivities } from '@/hooks/useActivities'
 import { useTranslations } from 'next-intl'
+import { useState, useEffect } from 'react'
+import { ActivityType, filterActivitiesByType } from '@/utils/activity-type'
 
 export default function Activities() {
   const { activities, isLoading, error, loadMore, hasMore } = useActivities()
-
+  const [selectedType, setSelectedType] = useState<ActivityType>('ride')
   const t = useTranslations()
+
+  // Calculate available activity types
+  const activityCounts = {
+    ride: filterActivitiesByType(activities, 'ride').length,
+    run: filterActivitiesByType(activities, 'run').length,
+    other: filterActivitiesByType(activities, 'other').length
+  }
+
+  const availableTypes = Object.entries(activityCounts)
+    .filter(([, count]) => count > 0)
+    .map(([type]) => type as ActivityType)
+
+  // Update selected type if current type has no data
+  useEffect(() => {
+    if (activities.length > 0 && !availableTypes.includes(selectedType) && availableTypes.length > 0) {
+      setSelectedType(availableTypes[0])
+    }
+  }, [activities, availableTypes, selectedType])
+
+  const filteredActivities = filterActivitiesByType(activities, selectedType)
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-          {t('activities.title')}
-        </h1>
-      </div>
+      {availableTypes.length > 1 && (
+        <ActivityTypeTab 
+          selectedType={selectedType} 
+          onTypeChange={setSelectedType}
+          availableTypes={availableTypes}
+        />
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -28,13 +53,18 @@ export default function Activities() {
         </div>
       ) : (
         <div className="space-y-4">
-          {activities.map(activity => (
+          {filteredActivities.map(activity => (
             <ActivityCard key={activity.id} activity={activity} />
           ))}
+          {filteredActivities.length === 0 && !isLoading && (
+            <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+              {t('activities.noActivities')}
+            </div>
+          )}
         </div>
       )}
 
-      {hasMore && (
+      {hasMore && selectedType === 'ride' && (
         <div className="flex justify-center py-4">
           <button
             onClick={loadMore}

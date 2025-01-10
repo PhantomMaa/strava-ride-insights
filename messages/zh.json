@@ -117,7 +117,7 @@
     }
   },
   "activities": {
-    "title": "骑行活动",
+    "noActivities": "没有找到活动数据",
     "loading": "加载中...",
     "loadMore": "加载更多",
     "card": {

@@ -128,7 +128,7 @@ export function HeatMap({ activities }: HeatMapProps) {
       </div>
 
       <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700">
-        <div className="flex items-center justify-between">
+        <div className="flex gap-2 items-center justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
             <span className="flex items-center">
               <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,7 +181,7 @@ export function HeatMap({ activities }: HeatMapProps) {
             )}
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             {availableGridSizes.length > 1 && (
               <div className="flex gap-1">
                 {availableGridSizes.map(({ value, label }) => (

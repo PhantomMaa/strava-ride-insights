@@ -1,5 +1,5 @@
 import React from 'react'
-import { MapPin, Clock, TrendingUp, Calendar, Heart, Bike, Zap } from 'lucide-react'
+import { MapPin, Clock, TrendingUp, Calendar, Heart, Zap, CircleGauge } from 'lucide-react'
 import type { StravaActivity } from '@/types/strava'
 import { useTranslations } from 'next-intl'
 import { ActivityMap } from './ActivityMap'
@@ -11,10 +11,6 @@ interface ActivityCardProps {
 
 export function ActivityCard({ activity, onClick }: ActivityCardProps) {
   const t = useTranslations()
-
-  // if (activity.trainer) {
-  //   return null // Skip indoor rides
-  // }
 
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -112,7 +108,7 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
 
           <div className="flex flex-col space-y-1">
             <div className="flex items-center text-gray-600 dark:text-gray-400">
-              <Bike className="h-4 w-4 mr-1 text-blue-500" />
+              <CircleGauge className="h-4 w-4 mr-1 text-blue-500" />
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {t('activities.card.speed')}
               </p>
