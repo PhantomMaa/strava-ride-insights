@@ -1,8 +1,6 @@
 export interface CityRoadsMapProps {
   summaryPolylines?: string[] // 支持多条路线
   summaryPolyline?: string // 保持向后兼容
-  startLatlng: number[]
-  disableZoom?: boolean
 }
 
 export interface Transform {
@@ -21,17 +19,6 @@ export interface Bounds {
   maxLat: number
   minLng: number
   maxLng: number
-}
-
-export interface RoadStyle {
-  width: number
-  color: string
-  opacity: number
-}
-
-export interface GradientColor {
-  stop: number
-  color: string
 }
 
 export interface DecodedRoute {

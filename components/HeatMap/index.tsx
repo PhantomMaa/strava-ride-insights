@@ -123,7 +123,6 @@ export function HeatMap({ activities }: HeatMapProps) {
         <CityRoadsMap
           key={selectedGroup}
           summaryPolylines={currentPolylines}
-          startLatlng={startLatlng}
         />
       </div>
 

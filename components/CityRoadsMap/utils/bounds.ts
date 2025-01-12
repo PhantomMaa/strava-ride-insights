@@ -1,5 +1,6 @@
 import polyline from '@mapbox/polyline'
 import type { Bounds, DecodedRoute } from '../types'
+import { ZOOM_SETTINGS } from '../constants'
 
 export function decodeRoutes(polylines: string[]): DecodedRoute[] {
   // 创建一个 Map 来存储每个点的出现频率
@@ -53,4 +54,37 @@ export function getBoundsForRoutes(routes: DecodedRoute[]): Bounds {
       maxLng: -Infinity,
     }
   )
+}
+
+export function getExpandedBounds(bounds: Bounds, aspectRatio: number): Bounds {
+  const latSpan = bounds.maxLat - bounds.minLat
+  const lngSpan = bounds.maxLng - bounds.minLng
+
+  // 根据宽高比调整边界
+  const center = {
+    lat: (bounds.minLat + bounds.maxLat) / 2,
+    lng: (bounds.minLng + bounds.maxLng) / 2,
+  }
+
+  let paddedLatSpan = latSpan
+  let paddedLngSpan = lngSpan
+  // 确保边界的宽高比与容器相匹配
+  const currentAspectRatio = paddedLngSpan / paddedLatSpan
+  if (currentAspectRatio > aspectRatio) {
+    // 太宽了，需要增加高度
+    paddedLatSpan = paddedLngSpan / aspectRatio
+  } else {
+    // 太高了，需要增加宽度
+    paddedLngSpan = paddedLatSpan * aspectRatio
+  }
+
+  paddedLatSpan *= (1 + ZOOM_SETTINGS.expandedPadding * 2)
+  paddedLngSpan *= (1 + ZOOM_SETTINGS.expandedPadding * 2)
+
+  return {
+    minLat: center.lat - paddedLatSpan / 2,
+    maxLat: center.lat + paddedLatSpan / 2,
+    minLng: center.lng - paddedLngSpan / 2,
+    maxLng: center.lng + paddedLngSpan / 2,
+  }
 }

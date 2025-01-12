@@ -1,5 +1,3 @@
-import type { GradientColor } from './types'
-
 /**
  * 城市路线的默认样式
  */
@@ -13,37 +11,22 @@ export const ROAD_STYLE = {
  * 骑行路线的样式
  */
 export const ROUTE_STYLE = {
-  maxWidth: 2,
-  baseWidth: 1,
-  intensityMultiplier: 3,
+  width: 1,
   opacity: 0.9,
+  color: 'rgb(255, 115, 17)', // 橙色
+  blur: 0.99
 }
 
-export const ZOOM_LIMITS = {
-  MIN: 0.5,
-  MAX: 4,
+export const ZOOM_SETTINGS = {
+  min: 0.6,
+  max: 20,
+  translatePadding: 0.2, // 平移范围限制为视口的±20%,
+  expandedPadding: 0.5, // 初始地图扩展所有路线外50%的范围
+  initialZoom: 1,
+  initialExtendPadding: 50
 }
 
 /**
  * 地图背景色
  */
 export const MAP_BACKGROUND = '#F7F2E8'
-
-/**
- * 不同强度骑行路线的颜色
- */
-export const HEATMAP_COLORS: GradientColor[] = [
-  { stop: 0, color: 'rgb(255, 153, 81)' }, // 更深的基础橙色
-  { stop: 0.3, color: 'rgb(255, 149, 64)' }, // 深橙色
-  { stop: 0.5, color: 'rgb(255, 115, 17)' }, // 更深的橙色
-  { stop: 0.7, color: 'rgb(255, 81, 0)' }, // 红橙色
-  { stop: 1, color: 'rgb(255, 0, 0)' }, // 纯红色
-]
-
-/**
- * 骑行路线的发光设置
- */
-export const GLOW_SETTINGS = {
-  blur: 0,
-  alpha: 0.3,
-}
