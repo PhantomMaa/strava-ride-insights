@@ -112,6 +112,8 @@ export function CityRoadsMap({
     })
     ctx.stroke()
 
+    const isOnlyOneRoute = routes.current.length === 1
+
     // Draw routes
     routes.current.forEach(route => {
       const routeFeature = {
@@ -124,10 +126,10 @@ export function CityRoadsMap({
 
       ctx.beginPath()
       ctx.strokeStyle = ROUTE_STYLE.color
-      ctx.lineWidth = ROUTE_STYLE.width / transform.k
+      ctx.lineWidth = (isOnlyOneRoute ? ROUTE_STYLE.singleWidth : ROUTE_STYLE.width) / transform.k
       ctx.globalAlpha = ROUTE_STYLE.opacity
       ctx.filter = `blur(${ROUTE_STYLE.blur}px)`
-      ctx.globalCompositeOperation = 'multiply'
+      if (!isOnlyOneRoute) ctx.globalCompositeOperation = 'multiply'
       path(routeFeature as any)
       ctx.stroke()
       ctx.globalAlpha = 1.0 // 恢复默认透明度

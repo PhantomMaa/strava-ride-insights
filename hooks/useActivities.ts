@@ -27,7 +27,7 @@ export function useActivities(): UseActivitiesReturn {
       setIsLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/strava/activities?per_page=50&page=${pageNum}`)
+      const response = await fetch(`/api/strava/activities?per_page=10&page=${pageNum}`)
       if (!response.ok) {
         throw new Error('Failed to fetch activities')
       }

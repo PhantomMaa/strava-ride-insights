@@ -1,85 +1,191 @@
 import type { Bounds } from '../types'
 
-const CACHE_EXPIRY_DAYS = 7
-const DB_NAME = 'road_network_cache'
+const CACHE_EXPIRY_DAYS = 180
+const DB_NAME = 'road_network_cache_v2'
 const STORE_NAME = 'road_data'
 
 interface CacheItem {
+  bounds: Bounds
   data: any
   timestamp: number
 }
 
-function openDB(): Promise<IDBDatabase> {
+interface DBSchema extends IDBDatabase {
+  createObjectStore(name: string, options?: IDBObjectStoreParameters): IDBObjectStore
+}
+
+// 单例模式确保数据库连接的复用
+let dbInstance: IDBDatabase | null = null
+
+async function getDB(): Promise<DBSchema> {
+  if (dbInstance) return dbInstance as DBSchema
+
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1)
+    const request = indexedDB.open(DB_NAME, 2)
     
     request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
+    
+    request.onsuccess = () => {
+      dbInstance = request.result
+      resolve(request.result as DBSchema)
+    }
     
     request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME)
+      const db = (event.target as IDBOpenDBRequest).result as DBSchema
+      
+      // 删除旧的数据库
+      if (db.objectStoreNames.contains(STORE_NAME)) {
+        db.deleteObjectStore(STORE_NAME)
+      }
+      
+      // 创建新的数据库，使用复合索引
+      const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
+      store.createIndex('bounds_idx', ['bounds.minLat', 'bounds.maxLat', 'bounds.minLng', 'bounds.maxLng'])
+      store.createIndex('timestamp_idx', 'timestamp')
+    }
+  })
+}
+
+function isWithinBounds(inner: Bounds, outer: Bounds): boolean {
+  return (
+    inner.minLat >= outer.minLat &&
+    inner.maxLat <= outer.maxLat &&
+    inner.minLng >= outer.minLng &&
+    inner.maxLng <= outer.maxLng
+  )
+}
+
+function normalizeBounds(bounds: Bounds): Bounds {
+  // 保留小数点后3位，提高精度到百米级别
+  const precision = 3
+  return {
+    minLat: Number(Math.floor(bounds.minLat * Math.pow(10, precision)) / Math.pow(10, precision)),
+    maxLat: Number(Math.ceil(bounds.maxLat * Math.pow(10, precision)) / Math.pow(10, precision)),
+    minLng: Number(Math.floor(bounds.minLng * Math.pow(10, precision)) / Math.pow(10, precision)),
+    maxLng: Number(Math.ceil(bounds.maxLng * Math.pow(10, precision)) / Math.pow(10, precision))
+  }
+}
+
+async function findCachedData(bounds: Bounds): Promise<CacheItem | null> {
+  const db = await getDB()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readonly')
+    const store = transaction.objectStore(STORE_NAME)
+    
+    // 使用游标遍历缓存数据
+    const request = store.openCursor()
+    const now = Date.now()
+    const expiryTime = CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+    
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => {
+      const cursor = request.result
+      if (cursor) {
+        const cacheItem = cursor.value as CacheItem
+        
+        // 检查是否过期
+        if (now - cacheItem.timestamp < expiryTime) {
+          // 检查边界框是否包含请求的区域
+          if (isWithinBounds(bounds, cacheItem.bounds)) {
+            resolve(cacheItem)
+            return
+          }
+        }
+        cursor.continue()
+      } else {
+        resolve(null)
       }
     }
   })
 }
 
-async function getCachedData(key: string): Promise<CacheItem | null> {
-  const db = await openDB()
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readonly')
-    const store = transaction.objectStore(STORE_NAME)
-    const request = store.get(key)
-    
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
-  })
-}
-
-async function setCachedData(key: string, value: CacheItem): Promise<void> {
-  const db = await openDB()
+async function setCachedData(bounds: Bounds, data: any): Promise<void> {
+  const db = await getDB()
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
-    const request = store.put(value, key)
+    
+    const cacheItem: CacheItem = {
+      bounds,
+      data,
+      timestamp: Date.now()
+    }
+    
+    const request = store.add(cacheItem)
     
     request.onerror = () => reject(request.error)
     request.onsuccess = () => resolve()
+    
+    // 清理过期数据
+    const expiryTime = Date.now() - (CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+    const index = store.index('timestamp_idx')
+    const range = IDBKeyRange.upperBound(expiryTime)
+    
+    index.openCursor(range).onsuccess = (event) => {
+      const cursor = (event.target as IDBRequest).result
+      if (cursor) {
+        cursor.delete()
+        cursor.continue()
+      }
+    }
   })
 }
 
-function normalizeBounds(bounds: Bounds): Bounds {
-  // 保留小数点后2位，大约精确到1公里级别
-  const precision = 2
-  return {
-    minLat: Number(bounds.minLat.toFixed(precision)),
-    maxLat: Number(bounds.maxLat.toFixed(precision)),
-    minLng: Number(bounds.minLng.toFixed(precision)),
-    maxLng: Number(bounds.maxLng.toFixed(precision))
+/**
+ * 删除旧版本的道路网络缓存数据库
+ */
+async function deleteOldDB(): Promise<void> {
+  try {
+    // 检查旧版本数据库是否存在
+    const oldDBExists = await new Promise<boolean>(async (resolve) => {
+      try {
+        // 获取数据库列表
+        const databases = await indexedDB.databases()
+        const exists = databases.some(db => db.name === 'road_network_cache')
+        resolve(exists)
+      } catch (error) {
+        console.error('检查数据库是否存在时出错:', error)
+        resolve(false)
+      }
+    })
+
+    if (!oldDBExists) {
+      return
+    }
+
+    // 删除v1版本的数据库
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.deleteDatabase('road_network_cache')
+      request.onsuccess = () => {
+        console.log('成功删除旧版本数据库')
+        resolve()
+      }
+      request.onerror = () => reject(request.error)
+    })
+  } catch (error) {
+    console.warn('删除旧数据库失败:', error)
   }
 }
 
 export async function fetchRoadNetwork(bounds: Bounds) {
+  // 删除旧版本数据库
+  await deleteOldDB()
+  
   // 规范化边界值以提高缓存命中率
   const normalizedBounds = normalizeBounds(bounds)
-  const cacheKey = JSON.stringify(normalizedBounds)
   
   try {
-    // Try to get data from cache
-    const cachedData = await getCachedData(cacheKey)
+    // 尝试从缓存获取数据
+    const cachedData = await findCachedData(normalizedBounds)
     if (cachedData) {
-      const now = Date.now()
-      const expiryTime = CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000 // 7 days in milliseconds
-      
-      if (now - cachedData.timestamp < expiryTime) {
-        return processRoadNetwork(cachedData.data)
-      }
+      console.log('Cache hit!')
+      return processRoadNetwork(cachedData.data)
     }
   } catch (error) {
     console.warn('Failed to read from cache:', error)
   }
 
+  console.log('Cache miss, fetching from API...')
   const query = `
     [out:json][timeout:25];
     (
@@ -104,13 +210,9 @@ export async function fetchRoadNetwork(bounds: Bounds) {
 
   const data = await response.json()
   
-  // Save to cache
+  // 保存到缓存
   try {
-    const cacheItem: CacheItem = {
-      data,
-      timestamp: Date.now()
-    }
-    await setCachedData(cacheKey, cacheItem)
+    await setCachedData(normalizedBounds, data)
   } catch (error) {
     console.warn('Failed to write to cache:', error)
   }
@@ -122,21 +224,26 @@ function processRoadNetwork(data: any) {
   const nodes = new Map()
   const ways = []
 
-  data.elements.forEach((element: any) => {
+  // 使用 for...of 循环替代 forEach 以提高性能
+  for (const element of data.elements) {
     if (element.type === 'node') {
       nodes.set(element.id, [element.lat, element.lon])
     }
-  })
+  }
 
-  data.elements.forEach((element: any) => {
+  for (const element of data.elements) {
     if (element.type === 'way' && element.nodes && element.tags?.highway) {
-      const coordinates = element.nodes.map((nodeId: number) => nodes.get(nodeId)).filter(Boolean)
+      const coordinates = []
+      for (const nodeId of element.nodes) {
+        const coord = nodes.get(nodeId)
+        if (coord) coordinates.push(coord)
+      }
 
       if (coordinates.length > 1) {
         ways.push({ coordinates, highway: element.tags.highway })
       }
     }
-  })
+  }
 
   return ways
 }

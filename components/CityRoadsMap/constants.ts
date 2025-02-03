@@ -11,9 +11,10 @@ export const ROAD_STYLE = {
  * 骑行路线的样式
  */
 export const ROUTE_STYLE = {
+  singleWidth: 2,
   width: 1,
   opacity: 0.9,
-  color: 'rgb(255, 115, 17)', // 橙色
+  color: 'rgb(255, 115, 17)',
   blur: 0.99
 }
 
